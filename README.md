@@ -1,56 +1,90 @@
-# RA6M3-HMI-Board-LVGL Reference Design Guide 
+The Interactive HMI Traffic Control System is an embedded simulation designed to replicate real-world intersection logic using the Renesas HMI Board.This project is based on the RT-Thread Real-Time Operating System (RTOS) and showcases how contemporary embedded systems can manage both graphical user interfaces (GUI) and accurate timing logic at the same time. In contrast to basic sequential loops, this system employs multi-threading to keep the interface responsive to user interactions, such as requests for pedestrian crossings, even while the traffic timer is running.
 
-[中文](README_ZH.md)|English|[性能评估](docs/evaluation.md)
+Hardware & Software Stack:- Hardware: Renesas HMI-Board(RA6M3)- Operating System: RT-Thread IoT OS- Development Environment: RT-Thread Studio- Graphics Library: LVGL v8.3
 
-Get ready to rock with our LVGL music player demo, designed for the HMI-Board development board. Built on the RT-Thread operating system and compatible with RT-Thread Studio/MDK5 software development environment, this design is powered by the RA6M3 central control chip. With features like 2D acceleration, JPEG encoding and decoding, and 2M Flash large-capacity storage control, you’ll have everything you need to create amazing graphic applications.
+How it works:
+This projects requires the following to be installed in your RT-Thread Studio
 
-Our reference design comes pre-loaded with the LVGL music player, boasting a stunning playback interface and easy-to-use controls. Just hit play/pause or skip to the next track right from the main screen.
+Scroll down
 
-This guide has got you covered with technical architecture, usage instructions, and resources and documentation. Dive in to evaluate the graphic performance of the RA6M3 chip and start building on this reference design for your own secondary development.
+Scroll down again
 
-## Technical Architecture
+Everything that is installed in the images above must be installed in order to make sure the creation of this project is smooth
 
-HMI-Board-LVGL technical architecture includes the System Layer, the Components Layer and the Applications layer. 
+The system utilizes the RT-Thread operating system to manage two primary threads running in parallel:1. The GUI Thread: Handles the LVGL rendering, touch inputs, screen transitions (Welcome -> Simulation -> Credits), and dynamic text updates.2. The Logic Thread: Manages the traffic timing (Red/Amber/Green) and listens for event flags.
 
-![](docs/picture/lvgl/lvgl.png)
+The "Interrupt" Logic - A key feature of this project is the Pedestrian Priority System. When the "Rush Red Light" button is pressed, an Event Flag is sent from the GUI thread to the Logic thread. This immediately interrupts the sleep timer and triggers a state change, simulating how modern smart traffic lights react to road demand.
 
-### System Layer
+State Management
+The system follows a strict Finite State Machine (FSM) to ensure safety and logic flow:
 
-RT-Thread was born in 2006, it is an open source, neutral, and community-based real-time operating system (RTOS). RT-Thread has not only just a real-time kernel, but also rich components. 
+Welcome Screen: Displays custom assets (CCS Logo) and navigation.
 
-It includes:
+Simulation Screen: Runs the active traffic logic.
 
-- Kernel layer: RT-Thread kernel, the core part of RT-Thread, includes the implementation of objects in the kernel system, such as multi-threading and its scheduling, semaphore, mailbox, message queue, memory management, timer, etc.; libcpu/BSP (Chip Migration Related Files/Board Support Package) is closely related to hardware and consists of peripheral drivers and CPU porting.
-- Components and Service Layer: Components are based on upper-level software on top of the RT-Thread kernel, such as virtual file systems, FinSH command-line interfaces, network frameworks, device frameworks, and more. Its modular design allows for high internal cohesion inside the components and low coupling between components.
-- [RT-Thread software package](https://packages.rt-thread.org/en/index.html): A general-purpose software component running on the RT-Thread IoT operating system platform for different application areas, consisting of description information, source code or library files. RT-Thread provides an open package platform with officially available or developer-supplied packages that provide developers with a choice of reusable packages that are an important part of the RT-Thread ecosystem. The package ecosystem is critical to the choice of an operating system because these packages are highly reusable and modular, making it easy for application developers to build the system they want in the shortest amount of time. RT-Thread supports 600+ software packages.
+Hardware Setup: The software is deployed to the hardware by connecting the HMI board directly to the workstation via a USB-C interface, which facilitates both power delivery and real-time firmware flashing through the onboard debugger.
 
-### Component Layer
+Step-by-step Instructions:
+Make sure all the packages mentioned before are installed before making this project
 
-The HMI-Board goes above and beyond with system-level support and integration of several top-notch system components. The LVGL multimedia component has been added to our example project for your convenience. All developers need to do is enable the LVGL software package in RT-Thread Studio/env and pull it from the server to add LVGL to their development project as a component. It’s that easy! No more complicated steps or manual additions - just improved efficiency and a smoother development process.
+1. Create RT-Thread Project
 
-### Application Layer
+Follow the screenshots above make sure everything is the same, especially the "Base On Board" part which critical for this project, name the project however you want. After you're done click finish, wait a bit till it finishes loading, and you have successfully created an RT-Thread project.
 
-The application layer in LVGL allows for the development of secondary user interfaces. Users can integrate their pre-existing or newly developed UI code at this level.
+2. Build and Flash to check if no issue with RT-Thread(can skip this)Once it finished creating you should see the following:
 
-Music Player Demo:
+click the hammer icon to build
 
-Easily control the music player on the touch panel by playing/pausing or skipping to the next track directly from the main screen. Access the music list by pulling up the panel control. The code can also be modified to switch from manual to automatic playback.
+once it finishes building you should get this
 
-## How to Use
+ignore the 2 warnings, connect your laptop and HMI board via USB- C cable and click the flash button to upload the default code RT-Thread puts as a demo for testing into your HMI board
 
-With RT-Thread Studio, you have the option to create an LVGL-Demo using a sample project. Once the project is set up, all you need to do is compile and upload it.
+once it finished uploading you should get an LVGL demo music player shown in your HMI board
 
-> For more information on installing and using RT-Thread Studio, check out the [[Quick Start]](https://www.rt-thread.io/document/site/rtthread-studio/um/studio-user-manual/) guide.
+if successful then there is no issue with your setup, if not then, again, make sure you have installed the packages shown before in the SDK manager
 
-![](docs/picture/lvgl/lvgl-1.png)
+3. Creating source file
 
-This image illustrates how the LVGL package is integrated within RT-Thread. Users have the ability to configure LVGL using a visual interface.
+In the project explorer on the left, find the src folder, right click -> New -> Source FIle
 
-![](docs/picture/lvgl/lvgl-2.png)
+name it trafficlight.c
 
-## Resources and Documentation
+click finish and it should show up inside the src folder
 
-For LVGL UI development, you can visit the LVGL official website and documentation center for more detailed information:
+It's important to note that before you start coding in your c fille make sure to remove the connection of the LVGL demo music player code to the system. In order to do that do the following:
 
-- [LVGL - Light and Versatile Embedded Graphics Library](https://lvgl.io/)
-- [LVGL documentation](https://docs.lvgl.io/8.3/)
+at line 21, put a // before lv_demo_music();once you have done that, RT-Thread should automatically use your c file as the main c file.4. Adding images
+
+Adding images to RT-Thread is important if you want to design your HMI, like adding backgrounds and such. First you must resize the image you want, resize its width within 150-200 by pixels. In my case, I used imageresizer.com to resize my images.
+
+Like so, make sure you change the width within 150-200. Once you have resized your image, you must now convert it into a c file, use https://lvgl.io/tools/imageconverter to convert your image to a file.
+
+Follow the formats below:
+
+after you're done, copy the converted file and paste it inside the src folder, right click src folder to paste
+
+in my case I added another two images which I use to show image of the developers of the project.
+
+5. Adding the code Go to trafficlight.c and paste the code I uploaded below in the attachments
+
+After you finish pasting the code into the trafficlight.c file, you may build and flash, just like what you did in step 2.
+
+You should get the following output in your HMI:
+
+"Dev" button on the top left takes you to the Credit Screen while the "Start Simulation" button takes you to the Simulation Screen
+
+This is the simulation screen, it simulates how real life traffic light works, the "Rush Red Light" only works during red light, it quickens the red light timer for pedestrians waiting even though nothing is passing by to quickly cross.
+
+The Credit Screen shows the developer of this project
+
+Now there you have it, you should have successfully created your own traffic light simulation by following this instructions.
+
+Conclusion
+The Interactive HMI Traffic Control System successfully demonstrates the power of combining the Renesas HMI-Board with the RT-Thread Operating System.
+
+By transitioning from basic "super-loops" to implementing RTOS multi-threading, we developed a system that allows the user interface to stay smooth and responsive (processing touch interrupts immediately) while maintaining the accuracy of the traffic signal timing. This project establishes a solid basis for grasping the architecture of contemporary appliance displays and industrial control panels.
+
+Future Improvements:
+- Physical GPIO Integration: Connecting real LEDs to the board's extension pins so the physical lights blink in sync with the screen.
+- Night Mode: Using the board's light sensor to automatically dim the screen brightness when the room gets dark.
+- Network Control: Using the board's Wi-Fi module to control the traffic light remotely from a web browser.
