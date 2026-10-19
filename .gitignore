@@ -1,0 +1,19 @@
+/RTE
+/Listings
+/Objects
+ra_cfg.txt
+
+/Debug/
+/Release/
+/build/
+
+# Compiled files
+*.o
+*.elf
+*.bin
+*.hex
+*.map
+
+# OS specific
+.DS_Store
+Thumbs.db
