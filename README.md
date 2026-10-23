@@ -159,3 +159,9 @@ By transitioning from basic "super-loops" to implementing RTOS multi-threading, 
 * **Physical GPIO Integration:** Connecting real LEDs to the board's extension pins so the physical lights blink in sync with the screen.
 * **Night Mode:** Using the board's light sensor to automatically dim the screen brightness when the room gets dark.
 * **Network Control:** Using the board's Wi-Fi module to control the traffic light remotely from a web browser.
+
+
+
+Project Developer :
+Binyusoph Sansarona
+Ken Jhim Villanueva
